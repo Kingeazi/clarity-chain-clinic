@@ -1,8 +1,20 @@
-;; Doctors Registry Contract
+;; Doctors Registry Contract - Enhanced Version
 
-;; Constants
+;; Constants and errors
 (define-constant contract-owner tx-sender)
 (define-constant err-unauthorized (err u100))
+(define-constant err-invalid-status (err u101))
+(define-constant err-invalid-license (err u102))
+(define-constant err-invalid-specialty (err u103))
+
+;; Approved specialties
+(define-data-var approved-specialties (list 20 (string-utf8 64)) (list 
+  "Cardiology"
+  "Neurology"
+  "Pediatrics"
+  "Internal Medicine"
+  "Surgery"
+))
 
 ;; Data structures
 (define-map doctors
@@ -11,35 +23,11 @@
     name: (string-utf8 64),
     license: (string-ascii 32),
     specialty: (string-utf8 64),
-    verified: bool
+    verified: bool,
+    status: (string-ascii 10),
+    last-updated: uint,
+    suspension-reason: (optional (string-utf8 256))
   }
 )
 
-;; Public functions
-(define-public (register-doctor 
-  (name (string-utf8 64))
-  (license (string-ascii 32))
-  (specialty (string-utf8 64)))
-  (ok (map-set doctors
-    tx-sender
-    {
-      name: name,
-      license: license,
-      specialty: specialty,
-      verified: false
-    }))
-)
-
-(define-public (verify-doctor (doctor principal))
-  (if (is-eq tx-sender contract-owner)
-    (ok (map-set doctors
-      doctor
-      (merge (unwrap-panic (map-get? doctors doctor))
-        { verified: true })))
-    err-unauthorized)
-)
-
-(define-read-only (is-verified-doctor (address principal))
-  (default-to false
-    (get verified (map-get? doctors address)))
-)
+[... rest of the enhanced doctors registry contract ...]
